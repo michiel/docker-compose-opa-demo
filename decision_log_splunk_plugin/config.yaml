@@ -3,3 +3,6 @@ decision_logs:
 plugins:
   println_decision_logger:
     stderr: false
+    splunk_hec_uri: 'splunk:8088'
+    splunk_hec_token: '3e6ffd12-0f69-46bb-ad0d-71cffb661a0d'
+

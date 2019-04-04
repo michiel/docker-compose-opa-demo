@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"sync"
 
@@ -13,7 +15,9 @@ import (
 )
 
 type Config struct {
-	Stderr bool `json:"stderr"`
+	Stderr         bool   `json:"stderr"`
+	SplunkHECURI   string `json:"splunk_hec_uri"`
+	SplunkHECToken string `json:"splunk_hec_token"`
 }
 
 type Factory struct{}
@@ -55,6 +59,24 @@ func (p *PrintlnLogger) Log(ctx context.Context, event logs.EventV1) error {
 		w = os.Stderr
 	}
 	fmt.Fprintln(w, event) // ignoring errors!
+
+	/* hackity hack */
+
+	url := p.config.SplunkHECURI
+	fmt.Println("URL:>", url)
+
+	var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	req.Header.Set("X-Custom-Header", "myvalue")
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
 	return nil
 }
 
