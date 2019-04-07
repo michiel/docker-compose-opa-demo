@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -18,6 +19,15 @@ type Config struct {
 	Stderr         bool   `json:"stderr"`
 	SplunkHECURI   string `json:"splunk_hec_uri"`
 	SplunkHECToken string `json:"splunk_hec_token"`
+}
+
+type HECPayload struct {
+	Host       string   `json: host`
+	Source     string   `json: source`
+	SourceType string   `json: sourcetype`
+	Index      string   `json: index`
+	Event      int      `json: event`
+	Fields     []string `json: temp_forecast`
 }
 
 type Factory struct{}
@@ -62,12 +72,20 @@ func (p *PrintlnLogger) Log(ctx context.Context, event logs.EventV1) error {
 
 	/* hackity hack */
 
+	/*
+		b, err := json.Marshal(M{"query": M{"query_string": M{"query": "query goes here"}}})
+		if err != nil {
+			log.Fatalln(err)
+		}
+		log.Println("   As Map:", string(b))
+	*/
+	/* hackity hack */
+
 	url := p.config.SplunkHECURI
 	fmt.Println("URL:>", url)
 
 	var jsonStr = []byte(`{"title":"Buy cheese and bread for breakfast."}`)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
-	req.Header.Set("X-Custom-Header", "myvalue")
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -76,6 +94,28 @@ func (p *PrintlnLogger) Log(ctx context.Context, event logs.EventV1) error {
 		panic(err)
 	}
 	defer resp.Body.Close()
+
+	hecPayload := HECPayload{
+		Host:       "host",
+		Source:     "SomeSource",
+		SourceType: "json",
+		Index:      "main",
+	}
+
+	hecPayloadJson, err := json.Marshal(hecPayload)
+	if err != nil {
+		fmt.Fprintf(w, "Error: %s", err)
+	}
+
+	req1, err1 := http.NewRequest("POST", url, bytes.NewBuffer(hecPayloadJson))
+	req1.Header.Set("Content-Type", "application/json")
+
+	client1 := &http.Client{}
+	resp1, err1 := client1.Do(req)
+	if err1 != nil {
+		panic(err)
+	}
+	defer resp1.Body.Close()
 
 	return nil
 }

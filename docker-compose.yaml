@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 
 services:
   opa:
@@ -10,8 +10,11 @@ services:
       - "run"
       - "--server"
       - "--log-level=debug"
-      - "api_authz.rego"
+      - "--config-file=/config/config.yaml"
+      - "--plugin-dir=/plugins"
+      - "/policies/api_authz.rego"
     volumes:
+      - ./volumes/opa-config/:/config
       - ./volumes/opa-policies/:/policies
       - ./volumes/opa-plugins/:/plugins
 
