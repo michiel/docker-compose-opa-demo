@@ -1,6 +1,23 @@
-# decision_logs:
-#   plugin: println_decision_logger
-# plugins:
-#   println_decision_logger:
-#     stderr: false
+services:
+  - name: acmecorp
+    url: http://forwarder:9111/forward
+    credentials:
+      bearer:
+        token: "bGFza2RqZmxha3NkamZsa2Fqc2Rsa2ZqYWtsc2RqZmtramRmYWxkc2tm"
+
+labels:
+  app: meetup_demo
+  region: au
+  environment: nonprod
+
+decision_logs:
+  service: acmecorp
+  reporting:
+    min_delay_seconds: 300
+    max_delay_seconds: 600
+
+status:
+  service: acmecorp
+
+default_decision: /http/example/authz/allow
 
