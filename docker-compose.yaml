@@ -46,3 +46,26 @@ services:
       - "./volumes/splunk-apps/demo_idx:/opt/splunk/etc/apps/demo_idx"
       - "./volumes/splunk-apps/demo_shc:/opt/splunk/etc/apps/demo_shc"
 
+  prometheus:
+    hostname: prometheus
+    image: prom/prometheus:v2.4.2
+    volumes:
+     - ./volumes/prometheus-server/prometheus.yml:/etc/prometheus/prometheus.yml
+    command: "--config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus"
+    ports:
+     - 9090:9090
+    links:
+      - "opa"
+
+  grafana:
+    hostname: grafana
+    image: grafana/grafana:5.2.4
+    volumes:
+     - ./volumes/grafana-config/config.ini:/etc/grafana/config.ini
+     - ./volumes/grafana-provisioning:/etc/grafana/provisioning
+     - ./volumes/grafana-dashboards:/var/lib/grafana/dashboards
+    ports:
+     - 3000:3000
+    links:
+      - "prometheus"
+
